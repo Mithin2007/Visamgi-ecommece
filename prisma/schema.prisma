@@ -60,11 +60,23 @@ model User {
   name String?
   phone String?
   role UserRole @default(CUSTOMER)
+  active Boolean @default(true)
+  sessions Session[]
   addresses Address[]
   orders Order[]
   carts Cart[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  userId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  @@index([userId, expiresAt])
 }
 
 model Address {
@@ -120,6 +132,7 @@ model Product {
   seoDescription String?
   featured Boolean @default(false)
   published Boolean @default(false)
+  archivedAt DateTime?
   images ProductImage[]
   variants ProductVariant[]
   inventoryTransactions InventoryTransaction[]
@@ -130,6 +143,7 @@ model Product {
   @@index([categoryId, published])
   @@index([material])
   @@index([stockStatus])
+  @@index([archivedAt])
 }
 
 model ProductImage {

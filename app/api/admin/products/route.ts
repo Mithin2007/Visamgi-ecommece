@@ -1,0 +1,2 @@
+import { NextResponse } from "next/server"; import { currentAdmin } from "@/server/auth"; import { db } from "@/server/db";
+export async function GET(req:Request){if(!(await currentAdmin()))return NextResponse.json({error:"Unauthorized"},{status:401});const {searchParams}=new URL(req.url),q=searchParams.get("q")||"";return NextResponse.json(await db.product.findMany({where:{archivedAt:null,...(q?{OR:[{name:{contains:q,mode:"insensitive"}},{sku:{contains:q,mode:"insensitive"}}]}:{})},include:{category:true},take:50}));}
