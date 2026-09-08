@@ -9,7 +9,7 @@ Phase 3 adds customer registration/login/logout, a server-rendered public catalo
 3. Run `pnpm install`, `pnpm db:generate`, and `pnpm db:migrate`.
 4. Create the first administrator through a controlled local script/service, then run `pnpm dev`.
 
-Customer accounts are created through `/register`. Phase 3 deliberately does not implement checkout, order creation, payment providers, shipping fulfilment, or AI assistance.
+Customer accounts are created through `/register`. Phase 4 adds server-authoritative checkout: saved addresses and cart lines are revalidated, inventory is reserved transactionally, an order/payment-pending record is created, and the cart is converted. Razorpay remains Phase 5 work; AI, courier integrations, and production deployment remain future work.
 
 ## Phase sequence
 

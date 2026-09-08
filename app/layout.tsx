@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import "@/styles/customer.css";
+import "@/styles/checkout.css";
+import "@/styles/navigation.css";
 
 export const metadata: Metadata = {
   title: { default: "VISAMGI | Heritage, considered", template: "%s | VISAMGI" },

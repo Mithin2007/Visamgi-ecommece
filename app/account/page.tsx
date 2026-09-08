@@ -1,2 +1,5 @@
-import Link from "next/link"; import {requireCustomer} from "@/server/auth"; import {logout} from "@/actions"; import {SiteHeader} from "@/components/site-header";
-export default async function Account(){const user=await requireCustomer();return <main><SiteHeader/><section className="shop shell"><p className="eyebrow">Your VISAMGI</p><h1>Welcome, {user.name??"collector"}.</h1><p>{user.email}</p><p><Link href="/account/addresses">Manage addresses</Link></p><form action={logout}><button className="button">Sign out</button></form></section></main>}
+import Link from "next/link";
+import { requireCustomer } from "@/server/auth";
+import { logout } from "@/actions";
+import { SiteHeader } from "@/components/site-header";
+export default async function Account(){const user=await requireCustomer();return <main><SiteHeader/><section className="shop shell"><p className="eyebrow">Your VISAMGI</p><h1>Welcome, {user.name??"collector"}.</h1><p className="account-intro">Your saved addresses and confirmed orders live here.</p><div className="account-links"><Link href="/account/addresses">Manage addresses <span>→</span></Link><Link href="/account/orders">View orders <span>→</span></Link></div><form action={logout}><button className="button">Sign out</button></form></section></main>}

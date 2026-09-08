@@ -1,0 +1,20 @@
+import { Prisma, PaymentMethod } from "@prisma/client";
+import { randomUUID } from "crypto";
+import { db } from "@/server/db";
+
+const zero=new Prisma.Decimal(0);
+const priceOf=(product:{price:Prisma.Decimal;salePrice:Prisma.Decimal|null;variants:{id:string;price:Prisma.Decimal|null}[]},variantId:string|null)=>product.variants.find(v=>v.id===variantId)?.price??product.salePrice??product.price;
+export async function checkout(userId:string,addressId:string,paymentMethod:PaymentMethod,token:string){
+  if(!token||token.length<16)throw new Error("Invalid checkout request.");
+  return db.$transaction(async tx=>{
+    const existing=await tx.order.findFirst({where:{userId,checkoutToken:token},include:{items:true}});if(existing)return existing;
+    const address=await tx.address.findFirst({where:{id:addressId,userId}});if(!address)throw new Error("Select one of your saved addresses.");
+    const cart=await tx.cart.findFirst({where:{userId,status:"ACTIVE"},include:{items:{include:{product:{include:{variants:true}}}}}});if(!cart||!cart.items.length)throw new Error("Your bag is empty.");
+    let subtotal=zero;const lines=[] as {item:typeof cart.items[number];unit:Prisma.Decimal;variant:typeof cart.items[number]["product"]["variants"][number]|undefined}[];
+    for(const item of cart.items){const p=item.product;if(!p.published||p.archivedAt)throw new Error("A product in your bag is unavailable.");const variant=item.variantId?p.variants.find(v=>v.id===item.variantId):undefined;if(item.variantId&&!variant)throw new Error("A selected option is unavailable.");const unit=priceOf(p,item.variantId);subtotal=subtotal.add(unit.mul(item.quantity));lines.push({item,unit,variant});}
+    const shippingConfig=await tx.shippingConfiguration.findFirst();const shipping=shippingConfig?.shippingCharge??zero;const total=subtotal.add(shipping);
+    const order=await tx.order.create({data:{orderNumber:`VSG-${Date.now().toString(36).toUpperCase()}-${randomUUID().slice(0,5).toUpperCase()}`,checkoutToken:token,userId,addressSnapshot:{fullName:address.fullName,phone:address.phone,line1:address.line1,line2:address.line2,city:address.city,district:address.district,state:address.state,pincode:address.pincode,landmark:address.landmark},subtotal,shipping,discount:zero,tax:zero,total,paymentMethod,paymentStatus:"PENDING",orderStatus:"PENDING",items:{create:lines.map(({item,unit,variant})=>({productId:item.productId,productNameSnapshot:item.product.name,skuSnapshot:variant?.sku??item.product.sku,variantNameSnapshot:variant?.name,variantAttributesSnapshot:variant?.attributes??undefined,priceSnapshot:unit,quantity:item.quantity,subtotal:unit.mul(item.quantity)}))},payment:{create:{provider:paymentMethod==="COD"?"COD":"PENDING_RAZORPAY",amount:total,status:"PENDING"}}}});
+    for(const {item,variant} of lines){if(variant){const result=await tx.productVariant.updateMany({where:{id:variant.id,stockQuantity:{gte:item.quantity}},data:{stockQuantity:{decrement:item.quantity}}});if(result.count!==1)throw new Error("An item is no longer available.");}else{const result=await tx.product.updateMany({where:{id:item.productId,stockQuantity:{gte:item.quantity}},data:{stockQuantity:{decrement:item.quantity}}});if(result.count!==1)throw new Error("An item is no longer available.");const current=await tx.product.findUniqueOrThrow({where:{id:item.productId}});await tx.product.update({where:{id:item.productId},data:{stockStatus:current.stockQuantity===0?"OUT_OF_STOCK":current.stockQuantity<=current.lowStockThreshold?"LOW_STOCK":"IN_STOCK"}});}await tx.inventoryTransaction.create({data:{productId:item.productId,delta:-item.quantity,reason:"RESERVATION",reference:order.orderNumber,actorId:userId}});await tx.inventoryReservation.create({data:{orderId:order.id,productId:item.productId,variantId:item.variantId,quantity:item.quantity}});}
+    await tx.cart.update({where:{id:cart.id},data:{status:"CONVERTED",convertedAt:new Date()}});await tx.auditLog.create({data:{actorId:userId,action:"ORDER_CREATED",entityType:"Order",entityId:order.id,metadata:{orderNumber:order.orderNumber}}});return order;
+  });
+}
