@@ -1,8 +1,6 @@
 import { InventoryReason, PrismaClient, StockStatus, UserRole } from "@prisma/client";
 import { hash } from "bcryptjs";
 
-const db = new PrismaClient();
-
 const PRIMARY_EMAIL = "dev.checkout.customer@visamgi.test";
 const SECONDARY_EMAIL = "dev.secondary.customer@visamgi.test";
 const CATEGORY_ID = "dev_seed_category";
@@ -10,6 +8,7 @@ const CATEGORY_SLUG = "dev-seed-category";
 const VARIANT_PRODUCT_ID = "dev_seed_product_variants";
 const STANDARD_PRODUCT_ID = "dev_seed_product_standard";
 const SHIPPING_CONFIGURATION_ID = "dev_seed_shipping_configuration";
+let db: PrismaClient | undefined;
 
 function requireDevelopmentGuards() {
   if (process.env.NODE_ENV === "production") throw new Error("Development commerce seed is disabled in production.");
@@ -17,7 +16,20 @@ function requireDevelopmentGuards() {
   if (process.env.VISAMGI_DEV_SEED_CONFIRM !== "VISAMGI-DEVELOPMENT-ONLY") throw new Error("Set VISAMGI_DEV_SEED_CONFIRM to the required development-only confirmation value.");
   const password = process.env.VISAMGI_DEV_SEED_PASSWORD;
   if (!password || password.length < 14) throw new Error("Set a development seed password of at least 14 characters.");
-  return password;
+  const databaseUrl = process.env.VISAMGI_DEV_SEED_DATABASE_URL;
+  if (!databaseUrl) throw new Error("Set VISAMGI_DEV_SEED_DATABASE_URL to the direct development database connection string.");
+  if (databaseUrl.includes("-pooler")) throw new Error("VISAMGI_DEV_SEED_DATABASE_URL must use Neon’s direct, non-pooled connection string.");
+  const runtimeDatabaseUrl = process.env.DATABASE_URL;
+  if (!runtimeDatabaseUrl) throw new Error("DATABASE_URL must be configured for the development branch.");
+  try {
+    const direct = new URL(databaseUrl);
+    const runtime = new URL(runtimeDatabaseUrl);
+    const normalizeNeonHost = (host: string) => host.replace("-pooler.", ".");
+    if (normalizeNeonHost(direct.hostname) !== normalizeNeonHost(runtime.hostname) || direct.pathname !== runtime.pathname) throw new Error("mismatch");
+  } catch {
+    throw new Error("VISAMGI_DEV_SEED_DATABASE_URL must target the same Neon database as DATABASE_URL.");
+  }
+  return { databaseUrl, password };
 }
 
 function assertSeedUser(user: { id: string; role: UserRole } | null, id: string, email: string) {
@@ -33,9 +45,11 @@ function assertSeedProduct(product: { id: string; sku: string; categoryId: strin
 }
 
 async function main() {
-  const password = requireDevelopmentGuards();
+  const { databaseUrl, password } = requireDevelopmentGuards();
+  const passwordHash = await hash(password, 12);
+  db = new PrismaClient({ datasourceUrl: databaseUrl });
 
-  await db.$transaction(async (tx) => {
+  const summary = await db.$transaction(async (tx) => {
     const [primary, secondary, category, variantProduct, standardProduct, shippingConfigurations] = await Promise.all([
       tx.user.findUnique({ where: { email: PRIMARY_EMAIL } }),
       tx.user.findUnique({ where: { email: SECONDARY_EMAIL } }),
@@ -56,7 +70,6 @@ async function main() {
     }
 
     if (!primary || !secondary) {
-      const passwordHash = await hash(password, 12);
       if (!primary) await tx.user.create({ data: { id: "dev_seed_primary_customer", email: PRIMARY_EMAIL, name: "Development Checkout Customer", passwordHash, role: UserRole.CUSTOMER, active: true } });
       if (!secondary) await tx.user.create({ data: { id: "dev_seed_secondary_customer", email: SECONDARY_EMAIL, name: "Development Secondary Customer", passwordHash, role: UserRole.CUSTOMER, active: true } });
     }
@@ -93,9 +106,15 @@ async function main() {
     const shippingConfiguration = shippingConfigurations[0];
     if (shippingConfiguration && (shippingConfiguration.id !== SHIPPING_CONFIGURATION_ID || shippingConfiguration.shippingCharge === null || shippingConfiguration.freeShippingThreshold === null || !shippingConfiguration.codEnabled || !shippingConfiguration.supportedStates.includes("Tamil Nadu"))) throw new Error("Conflicting development shipping configuration found.");
     if (!shippingConfiguration) await tx.shippingConfiguration.create({ data: { id: SHIPPING_CONFIGURATION_ID, supportedStates: ["Tamil Nadu"], shippingCharge: "99.00", freeShippingThreshold: "3000.00", deliveryEstimate: "3–5 development days", codEnabled: true } });
-  });
+    return { customers: Number(!primary) + Number(!secondary), category: Number(!category), products: Number(!variantProduct) + Number(!standardProduct), variants: 2 - variants.length, inventoryTransactions: 2 - initialTransactions.length, addresses: 2 - addresses.length, shippingConfiguration: Number(!shippingConfiguration) };
+  }, { maxWait: 10_000, timeout: 30_000 });
 
-  console.log("Development commerce seed prerequisites are ready.");
+  console.log(`Development commerce seed transaction committed. Created customers=${summary.customers}, category=${summary.category}, products=${summary.products}, variants=${summary.variants}, inventoryTransactions=${summary.inventoryTransactions}, addresses=${summary.addresses}, shippingConfiguration=${summary.shippingConfiguration}.`);
 }
 
-main().finally(() => db.$disconnect());
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : "Development commerce seed failed.");
+  process.exitCode = 1;
+}).finally(async () => {
+  await db?.$disconnect();
+});
