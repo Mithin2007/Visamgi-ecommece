@@ -1,1 +1,11 @@
-.menu-toggle{display:none;border:0;background:transparent;color:var(--ink);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;padding:8px}.customer-nav{display:flex;gap:27px;text-transform:uppercase;letter-spacing:.11em;font-size:.7rem}.customer-nav a{transition:opacity .2s ease}.customer-nav a:hover{opacity:.55}.menu-backdrop{display:none}@media(max-width:700px){.menu-toggle{display:block;position:relative;z-index:5}.customer-nav{display:none}.customer-nav.open{display:flex;position:fixed;inset:0 0 0 28%;z-index:4;background:#f5f0e8;flex-direction:column;justify-content:center;padding:42px;gap:25px;font:2rem var(--serif);letter-spacing:-.03em;text-transform:none}.menu-backdrop{display:block;position:fixed;inset:0 72% 0 0;z-index:3;border:0;background:#241b1688}.site-header{position:relative;z-index:2}.customer-nav.open a{opacity:1}.customer-nav.open a:focus-visible{outline:2px solid var(--moss);outline-offset:7px}}
+.menu-toggle { display:none; border:1px solid var(--line); background:transparent; color:var(--ink); min-width:46px; min-height:44px; padding:8px 10px; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; }
+.customer-nav { display:flex; gap:27px; text-transform:uppercase; letter-spacing:.11em; font-size:.7rem; }
+.customer-nav a { transition:opacity .2s ease, color .2s ease; } .customer-nav a:hover { opacity:.55; } .menu-backdrop { display:none; }
+@media (max-width:700px) {
+  .menu-toggle { display:block; position:relative; z-index:5; }
+  .customer-nav { display:none; }
+  .customer-nav.open { display:flex; position:fixed; inset:0 0 0 22%; z-index:4; background:var(--paper); flex-direction:column; justify-content:center; padding:42px; gap:22px; font:clamp(1.8rem, 7vw, 2.4rem) var(--serif); letter-spacing:-.03em; text-transform:none; box-shadow:-20px 0 50px rgba(38,27,22,.08); }
+  .menu-backdrop { display:block; position:fixed; inset:0 78% 0 0; z-index:3; border:0; background:rgba(36,27,22,.55); cursor:pointer; }
+  .site-header { position:relative; z-index:2; } .customer-nav.open a { opacity:1; } .customer-nav.open a[aria-current="page"] { color:var(--copper); }
+}
+@media (prefers-reduced-motion:reduce) { .customer-nav a { transition:none; } }
