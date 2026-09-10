@@ -1,0 +1,1 @@
+export default function ShopLoading(){return <main className="route-loading" aria-live="polite" aria-label="Opening collection"><div className="route-loading__mark" aria-hidden="true"><i/><i/><i/></div><p className="brand">VISAMGI</p><p>Opening the collection</p></main>;}
