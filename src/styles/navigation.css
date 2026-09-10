@@ -1,11 +1,1 @@
-.menu-toggle { display:none; border:1px solid var(--line); background:transparent; color:var(--ink); min-width:46px; min-height:44px; padding:8px 10px; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; }
-.customer-nav { display:flex; gap:27px; text-transform:uppercase; letter-spacing:.11em; font-size:.7rem; }
-.customer-nav a { transition:opacity .2s ease, color .2s ease; } .customer-nav a:hover { opacity:.55; } .menu-backdrop { display:none; }
-@media (max-width:700px) {
-  .menu-toggle { display:block; position:relative; z-index:5; }
-  .customer-nav { display:none; }
-  .customer-nav.open { display:flex; position:fixed; inset:0 0 0 22%; z-index:4; background:var(--paper); flex-direction:column; justify-content:center; padding:42px; gap:22px; font:clamp(1.8rem, 7vw, 2.4rem) var(--serif); letter-spacing:-.03em; text-transform:none; box-shadow:-20px 0 50px rgba(38,27,22,.08); }
-  .menu-backdrop { display:block; position:fixed; inset:0 78% 0 0; z-index:3; border:0; background:rgba(36,27,22,.55); cursor:pointer; }
-  .site-header { position:relative; z-index:2; } .customer-nav.open a { opacity:1; } .customer-nav.open a[aria-current="page"] { color:var(--copper); }
-}
-@media (prefers-reduced-motion:reduce) { .customer-nav a { transition:none; } }
+.menu-toggle{display:none;min-height:44px;border:0;background:transparent;color:var(--ink);font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}.customer-nav{display:flex;align-items:center;gap:1.55rem;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.customer-nav a{position:relative;padding:.45rem 0}.customer-nav a:after{content:"";position:absolute;right:0;bottom:.1rem;left:0;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .2s ease}.customer-nav a:hover:after,.customer-nav a[aria-current=page]:after{transform:scaleX(1);transform-origin:left}.menu-backdrop{display:none}@media(max-width:800px){.menu-toggle{display:block;position:relative;z-index:7}.customer-nav{display:none}.customer-nav.open{display:flex;position:fixed;inset:0 0 0 15%;z-index:6;flex-direction:column;align-items:flex-start;justify-content:center;gap:1.5rem;padding:3rem;background:var(--paper);font:clamp(1.7rem,7vw,2.5rem) var(--serif);letter-spacing:-.03em;text-transform:none;box-shadow:-18px 0 50px rgba(40,28,23,.12)}.customer-nav.open a{padding:.35rem 0}.menu-backdrop{display:block;position:fixed;inset:0 85% 0 0;z-index:5;border:0;background:rgba(40,28,23,.45)}}

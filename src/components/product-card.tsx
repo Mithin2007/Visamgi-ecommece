@@ -1,45 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
+import { customerName } from "@/components/customer-presentation";
+import { ProductVisual } from "@/components/product-visual";
 
-type ProductCardProps = {
-  product: {
-    id: string;
-    slug: string;
-    name: string;
-    price: { toString(): string };
-    salePrice: { toString(): string } | null;
-    stockStatus: string;
-    images: { url: string; alt: string }[];
-  };
-};
+type CardProduct={id:string;name:string;slug:string;price:{toString():string};salePrice:{toString():string}|null;material:string|null;stockStatus:string;images:{id:string;url:string;alt:string}[]};
 
-export function ProductCard({ product }: ProductCardProps) {
-  const onSale = Boolean(product.salePrice);
-  const displayPrice = product.salePrice ?? product.price;
-  const unavailable = product.stockStatus === "OUT_OF_STOCK";
-
-  return (
-    <Link href={`/shop/product/${product.slug}`} className="product-card">
-      <div className="product-card__image">
-        {product.images[0] ? (
-          <Image src={product.images[0].url} alt={product.images[0].alt || product.name} fill sizes="(max-width: 700px) 50vw, (max-width: 1100px) 33vw, 25vw" />
-        ) : (
-          <span className="product-image-fallback" role="img" aria-label="Product image unavailable">
-            VISAMGI<small>Image forthcoming</small>
-          </span>
-        )}
-        {unavailable && <span className="product-card__badge">Sold out</span>}
-      </div>
-      <div className="product-card__meta">
-        <h2>{product.name}</h2>
-        <p className="product-card__price">
-          {onSale && <s>₹{product.price.toString()}</s>}
-          <strong>₹{displayPrice.toString()}</strong>
-        </p>
-        <p className={unavailable ? "product-card__availability is-unavailable" : "product-card__availability"}>
-          {unavailable ? "Currently unavailable" : "Available to order"}
-        </p>
-      </div>
-    </Link>
-  );
+export function ProductCard({product}:{product:CardProduct}){
+  const title=customerName(product.name,"Heritage object"),available=product.stockStatus!=="OUT_OF_STOCK";
+  return <Link href={`/shop/product/${product.slug}`} className="product-card"><ProductVisual images={product.images} alt={title} sizes="(max-width: 700px) 100vw, (max-width: 1024px) 50vw, 33vw" className="product-card__visual"/><div className="product-card__details"><p className="product-card__eyebrow">{product.material??"VISAMGI collection"}</p><h2>{title}</h2><div><strong>₹{(product.salePrice??product.price).toString()}</strong><span className={available?"status-dot":"status-dot status-dot--muted"}>{available?"Available":"Sold out"}</span></div></div></Link>;
 }

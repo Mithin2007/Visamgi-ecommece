@@ -1,3 +1,6 @@
+import Image from "next/image";
+import Link from "next/link";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
-export default function AboutPage() { return <main><SiteHeader /><section className="empty-state shell"><p className="eyebrow">About VISAMGI</p><h1>A heritage story in progress.</h1><p>The founder story and material principles will be published here once approved brand copy is available.</p></section></main>; }
+export default function AboutPage(){return <main><SiteHeader/><section className="editorial-page shell"><div><p className="eyebrow">About VISAMGI</p><h1>Heritage, considered.</h1><p className="editorial-page__lede">VISAMGI brings together objects with material presence, a sense of ritual, and room to be lived with every day.</p><Link className="button" href="/shop">Explore the collection</Link></div><div className="editorial-page__image"><Image src="/images/editorial/craft-detail.png" alt="Heritage woodwork and handcrafted décor" fill sizes="(max-width: 800px) 100vw, 50vw"/></div></section><section className="about-principles shell"><p className="eyebrow">A considered point of view</p><div><article><h2>Material first</h2><p>Patina, grain and craft detail bring depth to a room.</p></article><article><h2>Objects with presence</h2><p>Pieces selected for the way they hold a space and invite a closer look.</p></article><article><h2>Made to live with</h2><p>Heritage references for contemporary interiors and everyday rituals.</p></article></div></section><SiteFooter/></main>;}
