@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 const collections = [
   { name: "Sacred rituals", image: "/images/collections/brass-rituals.png" },
@@ -20,6 +21,6 @@ export default function HomePage() {
     <section className="collections shell" aria-labelledby="collections-title"><div className="section-heading"><p className="eyebrow">Discover slowly</p><h2 id="collections-title">The collection</h2><Link href="/shop">View all <span aria-hidden="true">↗</span></Link></div><div className="collection-grid">{collections.map((collection) => <Link className="collection-card" href="/shop" key={collection.name}><div className="collection-card__image"><Image src={collection.image} alt="" fill sizes="(max-width: 700px) 100vw, 33vw" /></div><h3>{collection.name}</h3><span>Explore <span aria-hidden="true">→</span></span></Link>)}</div></section>
     <section className="editorial"><div className="editorial__image"><Image src="/images/editorial/craft-detail.png" alt="Heritage wooden arch and handcrafted décor" fill sizes="(max-width: 800px) 100vw, 50vw" /></div><div className="editorial__content"><p className="eyebrow">Made for meaning</p><h2>Every object carries the hand of its maker.</h2><p>From the patina of brass to the grain of reclaimed wood, material is where the story begins.</p><Link className="text-link" href="/about">Our story <span aria-hidden="true">→</span></Link></div></section>
     <section className="assistant-invite shell"><p className="eyebrow">Need a little guidance?</p><h2>Tell us about your space.</h2><p>Our shopping assistant will soon help you find pieces that belong together.</p><button className="button" type="button" disabled aria-describedby="assistant-note">Assistant coming soon</button><small id="assistant-note">Catalogue-connected recommendations arrive in a later phase.</small></section>
-    <footer className="footer shell"><span>VISAMGI</span><p>Heritage, considered.</p><p>© {new Date().getFullYear()} VISAMGI</p></footer>
+    <SiteFooter />
   </main>;
 }
