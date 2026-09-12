@@ -24,4 +24,8 @@ body,h1,h2,h3,.brand,.customer-nav a,.menu-toggle,.footer-label,.site-header .br
 /* Mobile containment: keep the landing page inside the viewport. */
 html,body{max-width:100%;overflow-x:hidden}img{max-width:100%}@media(max-width:800px){.hero__word{left:50%;top:43%;font-size:clamp(4rem,13vw,6.5rem);letter-spacing:-.09em}.editorial__content{padding:3.25rem 16px}.editorial__image,.editorial-page__image{min-width:0;width:100%}.home-invite{padding-inline:16px}.site-footer__grid{gap:1.5rem}.site-footer nav{min-width:0}.route-state{padding-inline:16px}}
 
+/* Use the supplied vertical hero photograph only on small screens. */
+.hero__image--mobile{display:none}
+@media(max-width:800px){.hero__image--desktop{display:none}.hero__image--mobile{display:block;object-fit:contain!important;object-position:center!important;background:#b27b45}.hero{background:#b27b45}}
+
 @media(max-width:800px){.editorial{display:block;width:100%;min-width:0}.editorial__image,.editorial__content{width:100%;min-width:0}.editorial__content{padding:3rem 16px}.editorial__content h2{overflow-wrap:anywhere}.site-footer__grid{grid-template-columns:1fr 1fr}.site-footer__grid section{grid-column:1/-1}.site-footer__base{overflow-wrap:anywhere}}
