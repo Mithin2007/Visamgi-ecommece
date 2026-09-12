@@ -1,2 +1,20 @@
-import { db } from "@/server/db"; import { createCategory,deleteCategory } from "./actions"; import { requireAdmin } from "@/server/auth";
-export default async function Categories(){await requireAdmin();const categories=await db.category.findMany({include:{_count:{select:{products:true}}},orderBy:{createdAt:"desc"}});return <><p className="eyebrow">Catalogue structure</p><h1>Categories</h1><form className="admin-form" action={createCategory}><label>Name<input name="name" required /></label><label>URL slug<input name="slug" placeholder="brass-and-metal" required pattern="[a-z0-9]+(-[a-z0-9]+)*" /></label><label>Description<textarea name="description" /></label><label>Local image reference<input name="imageUrl" placeholder="/images/collections/brass-rituals.png" /></label><label>Order<input name="sortOrder" type="number" defaultValue="0" min="0" /></label><label className="check"><input name="published" type="checkbox" /> Publish category</label><button className="button">Add category</button></form><div className="admin-table"><div className="tr head"><span>Name</span><span>Products</span><span>Status</span><span /></div>{categories.map(c=><div className="tr" key={c.id}><span><b>{c.name}</b><small>/{c.slug}</small></span><span>{c._count.products}</span><span>{c.published?"Published":"Draft"}</span><form action={deleteCategory}><input type="hidden" name="id" value={c.id}/><button disabled={c._count.products>0}>Delete</button></form></div>)}</div></>;}
+import { db } from "@/server/db";
+import { createCategory, deleteCategory } from "./actions";
+import { requireAdmin } from "@/server/auth";
+
+const displayName=(name:string)=>name.replace(/^Development Seed Collection$/i,"Main collection");
+
+export default async function Categories(){
+  await requireAdmin();
+  const categories=await db.category.findMany({include:{_count:{select:{products:true}}},orderBy:{createdAt:"desc"}});
+  return <><p className="eyebrow">Organise your shop</p><h1>Collections</h1><p className="admin-help">Create collections to help customers browse related products.</p>
+    <form className="admin-form" action={createCategory}>
+      <label>Collection name<input name="name" placeholder="Brass and ritual" required/></label>
+      <label>Description (optional)<textarea name="description" placeholder="A short note for customers"/></label>
+      <label>Display order<input name="sortOrder" type="number" defaultValue="0" min="0"/><small>Lower numbers appear first.</small></label>
+      <label className="check"><input name="published" type="checkbox" defaultChecked/> Show this collection to customers</label>
+      <button className="button">Create collection</button>
+    </form>
+    <div className="admin-table"><div className="tr head"><span>Collection</span><span>Products</span><span>Visibility</span><span>Actions</span></div>{categories.map(category=><div className="tr" key={category.id}><span><b>{displayName(category.name)}</b></span><span>{category._count.products} product{category._count.products===1?"":"s"}</span><span>{category.published?"Visible to customers":"Hidden from customers"}</span><div className="admin-actions"><form action={deleteCategory}><input type="hidden" name="id" value={category.id}/><button disabled={category._count.products>0}>{category._count.products>0?"Move products first":"Delete collection"}</button></form></div></div>)}</div>
+  </>;
+}
